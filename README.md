@@ -31,6 +31,47 @@ To set up a CI/CD pipeline on AWS integrated with GitHub, we'll be using AWS Cod
 6. Click **Next** and name the role `CodePipelineServiceRole`.
 
 ---
+If you don’t see **CodePipeline** as an option when creating an IAM role, follow these steps to resolve the issue:
+
+### Manually Attach Policies to a Custom Role
+1. **Create a custom IAM role**:
+   - Go to the **IAM** console.
+   - Select **Roles** > **Create Role**.
+   - Choose **AWS Service** as the trusted entity type.
+   - Select **EC2** or any service as a placeholder (you’ll adjust this later).
+   - Click **Next** to attach permissions.
+
+2. **Manually attach CodePipeline permissions**:
+   - After creating the role, go to **IAM** > **Roles** and find the role you just created.
+   - Select the role and click **Attach policies**.
+   - Search for the following managed policies:
+     - **AWSCodePipelineFullAccess**
+     - **AWSCodeBuildAdminAccess**
+     - **AmazonS3FullAccess** (if you need to access S3 buckets).
+     - **AWSCodeDeployFullAccess** (if you use CodeDeploy in your pipeline).
+   - Attach these policies to your role.
+
+3. **Modify the trust relationship**:
+   - In the IAM role settings, click **Trust relationships** > **Edit trust relationship**.
+   - Replace the service that was initially selected (e.g., EC2) with **CodePipeline**. Use this trust relationship:
+   ```json
+   {
+     "Version": "2012-10-17",
+     "Statement": [
+       {
+         "Effect": "Allow",
+         "Principal": {
+           "Service": "codepipeline.amazonaws.com"
+         },
+         "Action": "sts:AssumeRole"
+       }
+     ]
+   }
+   ```
+
+4. **Update your CodePipeline with the new role**:
+   - Now you can use this custom role in your CodePipeline creation.
+---
 
 ### Step 4: **Create an IAM Role for CodeBuild**
 1. In the IAM console, create a new role for **CodeBuild**.
